@@ -1,4 +1,4 @@
-const state = {
+let state = {
   showUI: 'main',
   selectedTabName: 'main',
   data: [
@@ -19,6 +19,22 @@ const state = {
   ],
 };
 
+function syncState() {
+  chrome.storage.local.set({
+    state,
+  });
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.get(['state'], (result) => {
+    if (!result.state) {
+      syncState();
+    } else {
+      state = result.state;
+    }
+  });
+});
+
 function sendState() {
   chrome.runtime.sendMessage({
     type: 'state',
@@ -28,6 +44,36 @@ function sendState() {
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   switch (message.type) {
+    case 'addNewData':
+      {
+        let tabDetails = state.data.find(
+          (d) => d.tabName === message.data.tabName
+        );
+        if (!tabDetails) {
+          tabDetails = {
+            tabName: message.data.tabName,
+            tabContent: [],
+          };
+          state.data.push(tabDetails);
+        }
+        let groupDetails = tabDetails.tabContent.find(
+          (d) => d.groupName === message.data.groupName
+        );
+        if (!groupDetails) {
+          groupDetails = {
+            groupName: message.data.groupName,
+            groupLinks: [],
+          };
+          tabDetails.tabContent.push(groupDetails);
+        }
+        groupDetails.groupLinks.push({
+          url: message.data.url,
+          name: message.data.urlTitle,
+        });
+      }
+      sendResponse('ok');
+      sendState();
+      break;
     case 'getData':
       sendResponse({ state });
       break;
@@ -72,7 +118,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             }
           }
         }
-        console.log(message.data);
       }
       break;
     case 'showMainUI':
@@ -81,4 +126,5 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       break;
     default:
   }
+  syncState();
 });

@@ -3,14 +3,17 @@
   "name": "Bookmark Bliss",
   "version": "1.0",
   "description": "Make bookmarking a blissfull process",
-  "permissions": ["tabs", "tabGroups"],
+  "permissions": ["tabs", "tabGroups", "storage"],
   "chrome_url_overrides": {
     "newtab": "main.html"
+  },
+  "action": {
+    "default_popup": "popup.html"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js", "renderer.js"]
+      "js": ["content.js", "renderer.js", "popup.js"]
     }
   ],
   "background": {
@@ -20,11 +23,13 @@
     {
       "resources": [
         "assets/css/bootstrap.min.css",
+        "assets/css/bootstrap-select.min.css",
         "assets/css/jsoneditor.min.css",
         "assets/css/jsoneditor-dark.min.css",
         "assets/css/img/jsoneditor-icons.svg",
         "assets/js/bootstrap.bundle.min.js",
-        "assets/js/jsoneditor.min.js"
+        "assets/js/jsoneditor.min.js",
+        "assets/js/bootstrap-select.min.js"
       ],
       "matches": ["<all_urls>"]
     }
